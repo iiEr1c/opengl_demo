@@ -54,10 +54,10 @@ int main()
     // 同时需要修改vertex attribute pointer(by glVertexAttribPointer api)
     float vertices[] = {
         //---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   2.0f, 2.0f,// 右上
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   2.0f, 0.0f,// 右下
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   0.0f, 0.0f,// 左下
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,    0.0f, 2.0f// 左上
     };
 
     unsigned int indices[] = {
@@ -90,18 +90,23 @@ int main()
     // 第五个参数 => 步长
     // const void * offset, 感觉等价于uint64_t or uint32_t 的offset
     // 验证方式: 在vertices中添加3个float,即偏移量=12byte
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(0));
     // 启用顶点属性, 0表示layout position0
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
     // 启动顶点属性, 1表示layout position 1
     glEnableVertexAttribArray(1);
 
     // Texture是vec2
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
     // 启动顶点属性, 1表示layout position 2
     glEnableVertexAttribArray(2);
+
+    // Texture是vec2
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(8 * sizeof(float)));
+    // 启动顶点属性, 1表示layout position 2
+    glEnableVertexAttribArray(3);
 
     // setup second Triangle
     // 这几行相当于一个上下文, 当我们绑定到其他VAO时, 需要指定具体的VBO
