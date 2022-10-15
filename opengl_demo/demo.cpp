@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include "shader.h"
 #include <iostream>
+#include <chrono>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -96,7 +97,8 @@ int main()
 
     // render loop
     // -----------
-    unsigned int i = 0;
+    auto start = std::chrono::high_resolution_clock::now();
+    float offset = 0.0f;
     while (!glfwWindowShouldClose(window)) {
         // input
         // -----
@@ -108,13 +110,24 @@ int main()
         // draw our first triangle
         // 这里继续沿用之前代码的颜色Orange
         shaderProgram.use();
+        using namespace std::chrono_literals;
+        auto now = std::chrono::high_resolution_clock::now();
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        if (diff > 100ms) {
+            start = now;
+            offset += 0.1f;
+            if (offset > 0.5f) {
+                offset = 0.0f;
+            }
+            shaderProgram.set_uniform("myoffset", offset);
+        }
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // 绑定VAOs[0] & 渲染
         glBindVertexArray(VAO);
         // 第二个参数: 顶点数组的起始索引, 相当于有两个offset?
         // 第三个参数: 一共多少个vertex
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0); // no need to unbind it every time
+        //glBindVertexArray(0); // no need to unbind it every time
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
