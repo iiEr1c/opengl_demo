@@ -19,9 +19,10 @@ const char* vertexShaderSource = "#version 330 core\n"
 
 const char* fragmentShader1Source = "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 ourColor;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = ourColor;\n"
     "}\n\0";
 
 
@@ -190,14 +191,13 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         // draw our first triangle
         // 这里继续沿用之前代码的颜色Orange
-        if (i % 2 == 0) {
-            glUseProgram(shaderProgramOrange);
-            ++i;
-        }
-        else {
-            glUseProgram(shaderProgramYellow);
-            ++i;
-        }
+        glUseProgram(shaderProgramOrange);
+        /* 更新shader的一些变量, 处理动态输入 */
+        double timeValue = glfwGetTime();
+        float greenValue = static_cast<float>(sin(timeValue) / 2.0 + 0.5);
+        int vertexColorLocation = glGetUniformLocation(shaderProgramOrange, "ourColor");
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // 绑定VAOs[0] & 渲染
         glBindVertexArray(VAO);
