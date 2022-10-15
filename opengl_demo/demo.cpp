@@ -113,11 +113,13 @@ int main()
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // 创建纹理
-    unsigned int texture;
-    glGenTextures(1, &texture);
+    unsigned int texture1, texture2;
+    glGenTextures(1, &texture1);
     // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
 
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // 在绑定纹理之前先激活纹理单元, 纹理单元GL_TEXTURE0默认总是被激活, 所以只有一个纹理单元时不需要显示激活
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
     // 为当前绑定的纹理对象设置环绕、过滤方式
     // set the texture wrapping parameters
     // set texture wrapping to GL_REPEAT (default wrapping method)
@@ -128,6 +130,7 @@ int main()
 
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     unsigned char* data = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
     if (data)
@@ -148,8 +151,37 @@ int main()
     }
     // 内存释放
     stbi_image_free(data);
-    // 解除Texture绑定
-    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenTextures(1, &texture2);
+    // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
+    // 在绑定纹理之前先激活纹理单元, 纹理单元GL_TEXTURE0默认总是被激活, 所以只有一个纹理单元时不需要显示激活
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // 为当前绑定的纹理对象设置环绕、过滤方式
+    // set the texture wrapping parameters
+    // set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    // -------------------------------------------------------------------------------------------
+    shaderProgram.use(); // don't forget to activate/use the shader before setting uniforms!
+    shaderProgram.set_uniform("texture1", 0);
+    shaderProgram.set_uniform("texture2", 1);
+
 
     // render loop
     // -----------
@@ -163,8 +195,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         // draw our first triangle
 
-        // 渲染前绑定texture
-        glBindTexture(GL_TEXTURE_2D, texture);
+        // 渲染前激活&绑定texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
         shaderProgram.use();
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // 绑定VAOs[0] & 渲染
