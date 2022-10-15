@@ -33,9 +33,9 @@ VertexShader::VertexShader(std::string_view path) : Shader{ path } {
 	int success{};
 	char log[512];
 	glGetShaderiv(m_shader_id, GL_COMPILE_STATUS, &success);
-	if (success != 0) {
+	if (success == 0) {
 		glGetShaderInfoLog(m_shader_id, 512, nullptr, log);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << log << std::endl;
+		std::cout << "ERROR::SHADER::VertexShader::COMPILATION_FAILED, log = " << log << std::endl;
 	}
 }
 
@@ -48,9 +48,9 @@ FragmentShader::FragmentShader(std::string_view path) : Shader{ path } {
 	int success{};
 	char log[512];
 	glGetShaderiv(m_shader_id, GL_COMPILE_STATUS, &success);
-	if (success != 0) {
+	if (success == 0) {
 		glGetShaderInfoLog(m_shader_id, 512, nullptr, log);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << log << std::endl;
+		std::cout << "ERROR::SHADER::FragmentShader::COMPILATION_FAILED, log = " << log << std::endl;
 	}
 }
 
@@ -66,9 +66,9 @@ ShaderProgram::ShaderProgram(std::string_view vertex_shader_path, std::string_vi
 	int success{};
 	char log[512];
 	glGetProgramiv(m_program_id, GL_LINK_STATUS, &success);
-	if (success != 0) {
+	if (success == 0) {
 		glGetProgramInfoLog(m_program_id, 512, nullptr, log);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << log << std::endl;
+		std::cout << "ERROR::SHADER::ShaderProgram::COMPILATION_FAILED, log = " << log << std::endl;
 	}
 }
 
