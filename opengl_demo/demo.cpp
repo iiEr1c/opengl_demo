@@ -119,30 +119,40 @@ int main()
     glDeleteShader(fragmentShaderYellow);
 
     // set up vertex data (and buffers(s)) and configure vertex attributes
-    float firstTriangle[] = {
-        -0.9f, -0.5f, 0.0f,  // left 
-        -0.0f, -0.5f, 0.0f,  // right
-        -0.45f, 0.5f, 0.0f,  // top 
+    // 使用EBO
+    float vertices[] = {
+        0.5f, 0.5f, 0.0f,   // 右上角
+        0.5f, -0.5f, 0.0f,  // 右下角
+        -0.5f, -0.5f, 0.0f, // 左下角
+        -0.5f, 0.5f, 0.0f   // 左上角
     };
 
-    float secondTriangle[] = {
-        0.0f, -0.5f, 0.0f,  // left
-        0.9f, -0.5f, 0.0f,  // right
-        0.45f, 0.5f, 0.0f   // top
+    unsigned int indices[] = {
+        // 注意索引从0开始! 
+        // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+        // 这样可以由下标代表顶点组合成矩形
+        0, 1, 3,
+        1, 2, 3,
+        0, 1, 2
     };
-
 
     // vertices相当于vertex shader func的input
-    unsigned int VBOs[2], VAOs[2];
-    glGenVertexArrays(2, VAOs);
-    glGenBuffers(2, VBOs);
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     // 设置第一个三角形
-    glBindVertexArray(VAOs[0]);
+    glBindVertexArray(VAO);
 
     // 复制顶点数组到buffer中供OpenGL使用
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(firstTriangle), firstTriangle, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // 这里是element array buffer, 不要和array buffer弄混淆
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 
     // 设置顶点属性Pointer
     // 定义GPU如何如何访问我们输入的内存, 顶点是3维的, float是4字节, 所以步长是12字节
@@ -160,17 +170,16 @@ int main()
 
     // setup second Triangle
     // 这几行相当于一个上下文, 当我们绑定到其他VAO时, 需要指定具体的VBO
-    glBindVertexArray(VAOs[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriangle), secondTriangle, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
-    glEnableVertexAttribArray(0);
+    // 解除绑定VAO
+    glBindVertexArray(0);
 
     // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // 线框模式enable
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
+    unsigned int i = 0;
     while (!glfwWindowShouldClose(window)) {
         // input
         // -----
@@ -180,21 +189,23 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // draw our first triangle
-        glUseProgram(shaderProgramOrange);
+        // 这里继续沿用之前代码的颜色Orange
+        if (i % 2 == 0) {
+            glUseProgram(shaderProgramOrange);
+            ++i;
+        }
+        else {
+            glUseProgram(shaderProgramYellow);
+            ++i;
+        }
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // 绑定VAOs[0] & 渲染
-        glBindVertexArray(VAOs[0]);
+        glBindVertexArray(VAO);
         // 第二个参数: 顶点数组的起始索引, 相当于有两个offset?
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        // 使用EBO绘图
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time
-
-        // OpenGL的内部状态有点科技黑箱, 已知会切换状态的函数包括:
-        // glUseProgram/glBindVertexArray 
-        // 切换Program
-        glUseProgram(shaderProgramYellow);
-        // 绑定VAOs[1] & 渲染
-        glBindVertexArray(VAOs[1]);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -204,8 +215,9 @@ int main()
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    glDeleteVertexArrays(2, VAOs);
-    glDeleteBuffers(1, VBOs);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgramOrange);
     glDeleteProgram(shaderProgramYellow);
 
