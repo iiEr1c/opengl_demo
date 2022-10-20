@@ -6,6 +6,10 @@
 #include <iostream>
 #include <chrono>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -210,6 +214,16 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture2);
         shaderProgram.use();
         shaderProgram.set_uniform("visibleParameter", visible);
+        
+        // 使用glm库进行计算
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        //unsigned int transformLoc = glGetUniformLocation(shaderProgram.getId(), "transform");
+        //glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+        shaderProgram.set_uniform("transform", transform);
+
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // 绑定VAOs[0] & 渲染
         glBindVertexArray(VAO);

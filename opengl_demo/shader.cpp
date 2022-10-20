@@ -82,6 +82,10 @@ void ShaderProgram::use() const noexcept {
 	glUseProgram(m_program_id);
 }
 
+inline unsigned int ShaderProgram::getId() const noexcept {
+	return m_program_id;
+}
+
 void ShaderProgram::set_uniform(std::string_view name, bool value) const noexcept {
 	glUniform1i(glGetUniformLocation(m_program_id, name.data()), static_cast<int>(value));
 }
@@ -92,4 +96,8 @@ void ShaderProgram::set_uniform(std::string_view name, int value) const noexcept
 
 void ShaderProgram::set_uniform(std::string_view name, float value) const noexcept {
 	glUniform1f(glGetUniformLocation(m_program_id, name.data()), value);
+}
+
+void ShaderProgram::set_uniform(std::string_view name, glm::mat4& value) const noexcept {
+	glUniformMatrix4fv(glGetUniformLocation(m_program_id, name.data()), 1, GL_FALSE, glm::value_ptr(value));
 }
