@@ -215,15 +215,18 @@ int main()
         shaderProgram.use();
         shaderProgram.set_uniform("visibleParameter", visible);
         
-        // 使用glm库进行计算
-        glm::mat4 transform = glm::mat4(1.0f);
         
-        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+        // create transformations
+        auto model = glm::mat4(1.0f);
+        auto view = glm::mat4(1.0f);
+        auto projection = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
 
-        //unsigned int transformLoc = glGetUniformLocation(shaderProgram.getId(), "transform");
-        //glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-        shaderProgram.set_uniform("transform", transform);
+        shaderProgram.set_uniform("model", model);
+        shaderProgram.set_uniform("view", view);
+        shaderProgram.set_uniform("projection", projection);
 
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // 绑定VAOs[0] & 渲染
@@ -233,16 +236,6 @@ int main()
         // indices的个数为6
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         //glBindVertexArray(0); // no need to unbind it every time
-
-        transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
-        float scaleAmount = static_cast<float>(abs(sin(glfwGetTime())));
-        transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
-        shaderProgram.set_uniform("transform", transform);
-
-        // draw again
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
