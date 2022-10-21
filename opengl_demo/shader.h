@@ -44,6 +44,7 @@ struct ShaderProgram {
 	void set_uniform(std::string_view name, int value) const noexcept;
 	void set_uniform(std::string_view name, float value) const noexcept;
 	void set_uniform(std::string_view name, glm::mat4& value) const noexcept;
+	// todo: glm::mat4&/glm::mat3&/glm::mat2&
 private:
 	unsigned int m_program_id;
 };
