@@ -112,7 +112,7 @@ int main()
     // world space positions of our cubes
     std::array<glm::vec3, 10> cubePositions = {
         glm::vec3(0.0f,  0.0f,  0.0f),
-        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(2.0f,  1.0f, -1.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
         glm::vec3(-3.8f, -2.0f, -12.3f),
         glm::vec3(2.4f, -0.4f, -3.5f),
@@ -234,6 +234,9 @@ int main()
     shaderProgram.set_uniform("texture2", 1);
 
 
+    auto projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    shaderProgram.set_uniform("projection", projection);
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
@@ -258,14 +261,13 @@ int main()
         
         // create transformations
         auto view = glm::mat4(1.0f);
-        auto projection = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(74.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 6.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-
-
+        float radius = 10.f;
+        float camX = static_cast<float>(sin(glfwGetTime()) * radius);
+        float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
+        // eye center up
+        view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shaderProgram.set_uniform("view", view);
-        shaderProgram.set_uniform("projection", projection);
+        
 
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // ∞Û∂®VAOs[0] & ‰÷»æ
