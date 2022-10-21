@@ -20,6 +20,15 @@ const unsigned int SCR_HEIGHT = 600;
 
 float visible = 0.5f;
 
+// camera
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
 int main()
 {
     // glfw: initialize and configure
@@ -240,6 +249,12 @@ int main()
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
+        // per-frame time logic
+        // --------------------
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         // input
         // -----
         processInput(window);
@@ -258,29 +273,22 @@ int main()
         shaderProgram.use();
         shaderProgram.set_uniform("visibleParameter", visible);
         
-        
+
         // create transformations
-        auto view = glm::mat4(1.0f);
-        float radius = 10.f;
-        float camX = static_cast<float>(sin(glfwGetTime()) * radius);
-        float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
-        // eye center up
-        view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        auto view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         shaderProgram.set_uniform("view", view);
-        
 
         // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         // ∞Û∂®VAOs[0] & ‰÷»æ
         glBindVertexArray(VAO);
+
+
 
         // ‰÷»æboxes
         for (size_t i = 0; i < cubePositions.size(); ++i) {
             auto model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            if (i % 3 == 0) {
-                angle = glfwGetTime() * 25.0f;
-            }
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             shaderProgram.set_uniform("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -311,18 +319,16 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        visible += 0.0001f;
-        if (visible >= 1.0f) {
-            visible = 1.0f;
-        }
-    }
-    else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        visible -= 0.0001f;
-        if (visible <= 0.0f) {
-            visible = 0.0f;
-        }
-    }
+
+    float cameraSpeed = static_cast<float>(2.5 * deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
